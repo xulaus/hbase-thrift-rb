@@ -1,8 +1,6 @@
-
 task :generate do
   require 'tempfile'
   require 'open-uri'
-  require 'pry'
 
   root = File.expand_path('../', __FILE__)
   spec = Gem::Specification::load(File.join(root, 'hbase-thrift.gemspec'))
@@ -20,13 +18,3 @@ end
 task :build => :generate
 
 require 'bundler/gem_tasks'
-# require 'rake/testtask'
-
-# task :default => :test
-
-# Rake::TestTask.new do |t|
-#   t.libs = []
-#   t.ruby_opts = ["-r 'hbase-thrift'}'", "-r 'minitest/autorun'"]
-#   t.pattern = "tests/*_test.rb"
-#   t.verbose = true
-# end
