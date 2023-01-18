@@ -15,15 +15,23 @@ module HBase
     end
   end
 
-  def self.scanTable(name, columns, &block)
+  def self.scanTable(name, columns, batchSize: 1000, &block)
     e = Enumerator.new do |e|
       with_client do |c|
-          scanner =  c.scannerOpen(name, '', Array(columns), {})
-          while((row = c.scannerGet(scanner)).present?) do
-            e.yield row[0].columns.transform_values { |v| v.value }
+        scan_def = TScan.new(startRow: '', columns: Array(columns), caching: batchSize)
+        scanner = c.scannerOpenWithScan(name, scan_def, {})
+
+        begin
+          c.send_scannerGet(scanner)
+          while((rows = c.recv_scannerGet()).present?) do
+            c.send_scannerGet(scanner)
+            e.yield rows[0].columns.transform_values { |v| v.value }
           end
+        ensure
+          c.scannerClose(scanner)
         end
       end
+    end
 
     return e unless block_given?
     return e.each(&block)
