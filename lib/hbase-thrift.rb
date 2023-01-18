@@ -11,4 +11,18 @@ module HBase
     yield Apache::Hadoop::Hbase::Thrift::Hbase::Client.new(protocol)
     transport.close()
   end
+
+  def self.scanTable(name, columns, &block)
+    e = Enumerator.new do |e|
+      with_client do |c|
+          scanner =  c.scannerOpen(name, '', Array(columns), {})
+          while((row = c.scannerGet(scanner)).present?) do
+            e.yield row[0].columns.transform_values { |v| v.value }
+          end
+        end
+      end
+
+    return e unless block_given?
+    return e.each(&block)
+  end
 end
