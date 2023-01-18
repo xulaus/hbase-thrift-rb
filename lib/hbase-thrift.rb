@@ -8,8 +8,11 @@ module HBase
     protocol = Thrift::BinaryProtocolAccelerated.new(transport)
 
     transport.open()
-    yield Apache::Hadoop::Hbase::Thrift::Hbase::Client.new(protocol)
-    transport.close()
+    begin
+      yield Apache::Hadoop::Hbase::Thrift::Hbase::Client.new(protocol)
+    ensure
+      transport.close()
+    end
   end
 
   def self.scanTable(name, columns, &block)
