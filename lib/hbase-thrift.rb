@@ -5,7 +5,11 @@ module HBase
   def self.with_client(host = 'localhost', port = '9090')
     socket = Thrift::Socket.new(host, port)
     transport = Thrift::BufferedTransport.new(socket)
-    protocol = Thrift::BinaryProtocolAccelerated.new(transport)
+    protocol = if defined? Thrift::BinaryProtocolAccelerated
+      Thrift::BinaryProtocolAccelerated.new(transport)
+    else
+      Thrift::BinaryProtocol.new(transport)
+    end
 
     transport.open()
     begin
